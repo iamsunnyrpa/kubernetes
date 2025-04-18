@@ -7,4 +7,4 @@ A comprehensive collection of resources, guides, and best practices for containe
 |*kubectl config get-contexts*|To know the details about all EKS cluster configurations.|
 |*kubectl config view*|To know the detailed view of EKS cluster config.|
 |*kubectl config use-context context-name*|Switch to a different EKS cluster config.|
-|*kubectl config view —minify —output 'jsonpath={..user}{"\n"}'*|To see which user/identity you're authenticated.|
+|*kubectl config view --minify --output 'jsonpath={..user}{"\n"}'*|To see which user/identity you're authenticated.|
