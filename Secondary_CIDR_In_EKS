@@ -1,1 +1,76 @@
+Procedure for Configuring AWS EKS with Secondary VPC CIDR Ranges to Mitigate IP Exhaustion.
 
+1. Introduction
+
+When an AWS Elastic Kubernetes Service (EKS) cluster faces IP address exhaustion within its primary VPC CIDR block, configuring the cluster to utilize secondary CIDR ranges provides a viable solution. This involves associating an additional CIDR block with the existing VPC and leveraging the AWS VPC CNI plugin's custom networking capabilities.
+
+2. VPC and Subnet Configuration
+
+Associate Secondary CIDR: Add the desired secondary CIDR block (e.g., from the 100.64.0.0/10 range) to the EKS cluster's VPC via the AWS console or CLI (aws ec2 associate-vpc-cidr-block).
+Create New Subnets: Provision new subnets within the newly associated secondary CIDR range in the relevant Availability Zones.
+Routing and Tagging: Ensure these new subnets are associated with the appropriate route tables (e.g., private route tables with NAT Gateway routes if necessary). Apply required tags to the subnets, such as those needed for discovery by tools like Karpenter (karpenter.sh/discovery: ${CLUSTER_NAME}) or for AWS VPC CNI custom networking if using alternative label definitions.
+
+3. Create ENIConfig Resources
+
+The AWS VPC CNI plugin uses ENIConfig Custom Resources (CRDs) to map Availability Zones to specific subnets and security groups intended for pod network interfaces (ENIs). Create an ENIConfig resource for each Availability Zone/subnet combination where pods utilizing the secondary CIDR will be scheduled.
+
+ENIConfig Template:
+
+--------------
+apiVersion: crd.k8s.amazonaws.com/v1alpha1
+kind: ENIConfig
+metadata:
+  # The name must match the Availability Zone for automatic discovery
+  # using topology.kubernetes.io/zone label
+  name: us-east-1a # Example AZ name
+spec:
+  securityGroups:
+    # Security Group ID(s) to associate with Pod ENIs
+    - sg-xxxxxxxxxxxxxxxx1
+  # Subnet ID from the secondary CIDR range for this AZ
+  subnet: subnet-yyyyyyyyyyyyyyy1
+--------------
+
+Apply one manifest file per required ENIConfig.
+
+4. Configure AWS VPC CNI Plugin
+
+Modify the aws-node DaemonSet configuration to enable custom networking and specify how ENIConfig resources should be discovered:
+
+Enable Custom Networking Mode: Set the AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG environment variable to true.
+
+--------------
+kubectl set env daemonset aws-node -n kube-system AWS_VPC_K8S_CNI_CUSTOM_NETWORK_CFG=true
+--------------
+
+Define ENIConfig Discovery Label: Specify the node label the CNI plugin should use to find the corresponding ENIConfig. Using the Availability Zone is common. (Note: topology.kubernetes.io/zone is the current standard label).
+
+
+# Recommended label:
+
+--------------
+kubectl set env daemonset aws-node -n kube-system ENI_CONFIG_LABEL_DEF=topology.kubernetes.io/zone
+--------------
+
+# Or using the deprecated label if needed:
+# kubectl set env daemonset aws-node -n kube-system ENI_CONFIG_LABEL_DEF=failure-domain.beta.kubernetes.io/zone
+
+5. Verification
+
+Deploy new workloads to the cluster and inspect the assigned pod IP addresses to confirm they are being allocated from the secondary CIDR range configured in the ENIConfig resources.
+
+Deploy Test Workload:
+
+--------------
+kubectl create deployment nginx-test --image=nginx --replicas=10
+--------------
+
+Inspect Pod IPs:
+
+--------------
+kubectl get pods -o wide --selector=app=nginx-test
+--------------
+
+Observe the IP column in the output; the IPs should belong to the secondary CIDR subnets.
+
+This configuration allows the EKS cluster to scale beyond the limitations of the primary VPC CIDR block by leveraging secondary IP address ranges for pod networking.
