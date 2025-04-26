@@ -1,0 +1,39 @@
+apiVersion: v1                       # Specifies the Kubernetes API version being used.
+kind: Pod                            # Resource type (Pod in this case). Defines the object type being created.
+metadata:                            # Data that helps uniquely identify the object.
+  name: techops-pod                  # Unique name for the Pod within its namespace.
+  labels:                            # Key/value pairs attached to objects, useful for organizing and selecting subsets of objects.
+    app: techops                     # App label, useful for selectors (e.g., grouping Pods belonging to the same application).
+    tier: backend                    # Tier label, useful for identifying the application layer (e.g., frontend, backend).
+spec:                                # Specification of the desired state for the Pod.
+  containers:                        # List of containers running in this Pod.
+  - name: techops-container          # Name of the container.
+    image: nginx:1.23                # Docker image used for the container.
+    ports:                           # List of network ports to expose from the container.
+    - containerPort: 80              # Port the container exposes internally.
+    env:                             # List of environment variables to set in the container.
+    - name: ENV
+      value: Production              # Environment variables for configuration.
+    volumeMounts:                    # Volumes mounted inside the container.
+    - name: config-volume            # Must match the name of a Volume defined in the '.spec.volumes' section.
+      mountPath: /usr/share/nginx/html # Path within the container at which the volume should be mounted.
+  volumes:                           # List of volumes that can be mounted by containers belonging to the Pod.
+  - name: config-volume              # Name of the volume.
+    configMap:                       # Specifies the source of the volume is a ConfigMap.
+      name: techops-config           # Use ConfigMap as the source. The name of the ConfigMap used for the volume.
+  restartPolicy: Always              # Defines the Pod's behavior on container termination. 'Always' means Kubelet restarts the container. Other options: 'OnFailure', 'Never'.
+  nodeSelector:                      # Constraints for selecting nodes where the Pod can be scheduled.
+    disktype: ssd                    # Schedule only on nodes labeled with 'disktype=ssd'.
+  tolerations:                       # Allows scheduling on nodes with matching taints.
+  - key: "special-taint"             # The key of the taint to tolerate.
+    operator: "Equal"                # The operator to match the taint. Options: 'Equal', 'Exists'.
+    value: "true"                    # The value of the taint to tolerate (used with 'Equal' operator).
+    effect: "NoExecute"              # The effect of the taint to tolerate. 'NoExecute' means Pods running on the node are evicted if they don't tolerate the taint. Other options: 'NoSchedule', 'PreferNoSchedule'.
+  securityContext:                   # Pod-level security settings.
+    runAsUser: 1000                  # Run containers with this user ID.
+    runAsGroup: 3000                 # Run containers with this primary group ID.
+    fsGroup: 2000                    # Group ownership for mounted volumes.
+  initContainers:                    # List of containers that run before the main app containers start.
+  - name: init-techops               # Name of the init container.
+    image: busybox                   # Image for the init container.
+    command: ["sh", "-c", "echo Init; sleep 5"] # Entry command executed by the init container.
