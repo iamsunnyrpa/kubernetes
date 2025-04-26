@@ -37,3 +37,18 @@ spec:                                # Specification of the desired state for th
   - name: init-techops               # Name of the init container.
     image: busybox                   # Image for the init container.
     command: ["sh", "-c", "echo Init; sleep 5"] # Entry command executed by the init container.
+
+----------------------------------------------------
+
+apiVersion: Specifies the Kubernetes API version. v1 is the core API group.
+kind: Defines the type of Kubernetes object; here, it's a Pod.
+metadata: Contains information to identify the Pod, like its name and labels. Labels are key-value pairs used for grouping and selection.
+spec: Describes the desired state of the Pod.
+containers: Lists the containers running within the Pod. Each container has a name, specifies the image to use, ports to expose, env variables, and volumeMounts.
+volumes: Defines storage volumes available to the Pod. Here, a volume named config-volume is created using data from a ConfigMap named techops-config.
+volumeMounts: Specifies where the defined volumes (config-volume) should be mounted inside the container (/usr/share/nginx/html).
+restartPolicy: Determines if/when containers should be restarted if they terminate. Always is the default.
+nodeSelector: Restricts the Pod to run only on nodes with specific labels (here, disktype: ssd).
+tolerations: Allows the Pod to be scheduled onto nodes with specific "taints". Taints repel Pods unless they have a matching toleration. This Pod tolerates a taint with key special-taint, value true, and effect NoExecute.
+securityContext: Defines security settings for the Pod and its containers, such as the user (runAsUser) and group (runAsGroup, fsGroup) IDs to run as.
+initContainers: Containers that run and complete sequentially before the main application containers (spec.containers) start. Useful for setup tasks. Here, an init-techops container runs a simple shell command.
