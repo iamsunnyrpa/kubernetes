@@ -77,19 +77,13 @@ This will display the current status and health of the guestbook application res
 * Access your Load Balancer DNS in a web browser. This can be obtained from the **argocd-server** service within the **argocd** namespace.
 * Enter your user credentials to log in.
 * Upon successful login, click on the "+ New App" button, as illustrated below:
-
 ![](ArgoCD/images/add_new.png)
-
 * Provide the Application Name, Project, and select the desired Sync Policy:
 ![](ArgoCD/images/General.png)
-
 * Configure the source repository with the following details:
-
-- Repository URL: https://github.com/iamsunnyrpa/kubernetes.git
-- Path: ArgoCD/Sample_Application
-
+  - Repository URL: https://github.com/iamsunnyrpa/kubernetes.git
+  - Path: ArgoCD/Sample_Application
 ![](ArgoCD/images/source.png)
-
 * On the subsequent page, specify the target cluster and namespace:
 ![](ArgoCD/images/Destination.png)
 
