@@ -14,7 +14,7 @@ This document provides a detailed guide to installing, configuring, and troubles
 
 This set of commands first creates a dedicated namespace argocd for the Argo CD deployment and then applies the official installation manifests to that namespace. This will deploy all the necessary Argo CD components in your Kubernetes cluster.
 
-2. Verify Installation
+### Verify Installation
 
 ```
 kubectl get all -n argocd
@@ -42,7 +42,7 @@ kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}
 
 This command patches the argocd-server service to change its type to LoadBalancer. This is crucial for accessing the Argo CD UI from outside the Kubernetes cluster in cloud environments.  If you are running in a local environment like Minikube, you might use NodePort or port-forward instead.
 
-5. Get Argo CD Server Details
+### Get Argo CD Server Details
 
 ```
 kubectl get svc -n argocd
@@ -52,6 +52,7 @@ This command retrieves the details of all services running in the argocd namespa
 
 Example Output:
 
+```
 NAME                                      TYPE           CLUSTER-IP       EXTERNAL-IP                                                              PORT(S)                      AGE
 argocd-applicationset-controller          ClusterIP      172.20.132.182   <none>                                                                   7000/TCP,8080/TCP            4m15s
 argocd-dex-server                         ClusterIP      172.20.4.150     <none>                                                                   5556/TCP,5557/TCP,5558/TCP   4m15s
@@ -61,7 +62,7 @@ argocd-redis                              ClusterIP      172.20.118.120   <none>
 argocd-repo-server                        ClusterIP      172.20.66.247    <none>                                                                   8081/TCP,8084/TCP            4m15s
 argocd-server                             LoadBalancer   172.20.172.144   <LB DNS>                                                                 80:32693/TCP,443:31208/TCP   4m15s
 argocd-server-metrics                     ClusterIP      172.20.250.94    <none>                                                                   8083/TCP                     4m15s
-
+```
 ## Retrieve the Default Admin Password
 The default username is admin.
 To get the initial password, run:
