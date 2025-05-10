@@ -89,7 +89,7 @@ This will display the current status and health of the guestbook application res
 ![source.png](ArgoCD/images/source.png)
 * On the subsequent page, specify the target cluster and namespace:
 
-![Destination.png](ArgoCD/images/Destination.png)
+![Destination.png](https://github.com/iamsunnyrpa/kubernetes/blob/main/ArgoCD/images/Destination.png)
 
 * Once it created, on the Applications page, click on Sync button of the guestbook application.
 
