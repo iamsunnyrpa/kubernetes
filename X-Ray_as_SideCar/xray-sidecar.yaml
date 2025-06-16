@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sample-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sample-app
+  template:
+    metadata:
+      labels:
+        app: sample-app
+    spec:
+      containers:
+      # Your application container
+      - name: application
+        image: your-application-image:latest
+        ports:
+        - containerPort: 8080
+        env:
+        - name: AWS_XRAY_DAEMON_ADDRESS
+          value: "xray-daemon:2000"
+        
+      # X-Ray daemon sidecar container
+      - name: xray-daemon
+        image: amazon/aws-xray-daemon:latest
+        ports:
+        - containerPort: 2000
+          protocol: UDP
+        resources:
+          limits:
+            memory: 256Mi
+            cpu: 256m
+          requests:
+            memory: 32Mi
+            cpu: 50m
+        # IAM role for service account should be configured for X-Ray permissions
+---
+# Service for your application
+apiVersion: v1
+kind: Service
+metadata:
+  name: sample-app
+spec:
+  selector:
+    app: sample-app
+  ports:
+  - port: 80
+    targetPort: 8080
+  type: ClusterIP
